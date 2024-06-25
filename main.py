@@ -38,5 +38,5 @@ def main():
     action()
 
 if __name__ == "__main__":
-    # os.system('adb connect localhost:51561')
+    os.system('adb connect localhost:5555')
     main()
