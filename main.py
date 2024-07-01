@@ -30,7 +30,6 @@ def generate_comment():
         prompt = f"Generate a small, les than 15 words engaging random comment for a Instagram post: "
         response = model.generate_content(prompt)
         
-        # Limit the response length to 30 tokens
         comment = response.text
         return comment
     except Exception as e:
