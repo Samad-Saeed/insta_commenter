@@ -230,7 +230,7 @@ def comment_on_stories(device):
 
 
 def main():
-    device = u2.connect('192.168.1.9:43487')
+    device = u2.connect('')
 
     while True:
         print("\nMenu:")
