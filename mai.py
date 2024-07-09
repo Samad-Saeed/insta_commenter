@@ -24,7 +24,7 @@ def comment_on_hashtag_posts(device, hashtag):
     time.sleep(2)
 
     while True:
-            
+            time.sleep(2)
             like_button_visible = False
             for _ in range(3):  # Try swiping a few times to bring the like button into view
                 like_button = device(resourceId='com.instagram.android:id/row_feed_button_like')

@@ -21,7 +21,7 @@ def get_gpt_response(prompt, api_key):
         return f"Error: {response.status_code}, {response.text}"
 
 if __name__ == "__main__":
-    api_key = "sk-proj-M61am7gCMjvrAz76R0gKT3BlbkFJMQXhvid77SOqBTv6W8kq"
-    prompt = "Tell me a joke."
+    api_key = ""
+    prompt = "write me a nice comments."
     answer = get_gpt_response(prompt, api_key)
-    print("GPT-3 Response:", answer)
+    print(answer)
