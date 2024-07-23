@@ -58,14 +58,13 @@ def extract_caption(device):
         print(f"[-] Error extracting caption: {e}")
     return None
 
-
 def like_post(device):
     like_button = device(resourceId='com.instagram.android:id/row_feed_button_like')
     if like_button.exists:
         if like_button.info['contentDescription'] == 'Liked':
             print("[+] Already liked the post")
         else:
-            like_button.click()
+            # like_button.click()
             print("[+] Post Liked")
             return True
     else:
@@ -81,7 +80,7 @@ def comment_on_post(device, comment_text):
             comment_field.set_text(comment_text)
             time.sleep(2)
             post_button = device(resourceId="com.instagram.android:id/layout_comment_thread_post_button_icon")
-            post_button.click()
+            # post_button.click()
             print("[+] Commented on the post")
             device.press('back')
             device.press('back')
@@ -92,11 +91,11 @@ def comment_on_post(device, comment_text):
 
 def search_hashtag(device, hashtag):
     device.session("com.instagram.android")
-    device.sleep(4)
+    time.sleep(4)
 
     search_button = device.xpath('//*[@resource-id="com.instagram.android:id/search_tab"]')
     search_button.click()
-    device.sleep(2)
+    time.sleep(2)
     
     search_bar = device.xpath('//*[@resource-id="com.instagram.android:id/action_bar_search_hints_text_layout"]')
     search_bar.set_text(f"#{hashtag}")
@@ -110,16 +109,15 @@ def search_hashtag(device, hashtag):
         return False
     return True
 
-def comment_on_hashtag_posts(device, hashtag, num_post):
-    if not search_hashtag(device, hashtag):
+def comment_on_hashtag_posts(device ):
+    if not search_hashtag(device):
         return
     
     post = device(resourceId="com.instagram.android:id/image_button", index=0)
     post.click()
     time.sleep(2)
 
-    posts_count = 0 
-    while posts_count < num_post:
+    while True:
         time.sleep(2)
         like_successful = like_post(device)
         
@@ -134,13 +132,13 @@ def comment_on_hashtag_posts(device, hashtag, num_post):
                 comment_successful = comment_on_post(device, comment_text)
                 random_swipe = random.choice([True, False])
                 time.sleep(2)
+                # if comment_successful:
+                #     device.swipe(500, 1500, 500, 500)  
+
                 if not comment_successful:
                     print("[-] Error during commenting, swiping to next post.")
                 if random_swipe:
                     device.swipe(500, 1500, 500, 500)
-
-                posts_count += 1
-                print(f'Number of post = {posts_count}')
             else:
                 print("[-] Could not extract caption, swiping to next post.")
         else:
@@ -149,8 +147,9 @@ def comment_on_hashtag_posts(device, hashtag, num_post):
         device.swipe(500, 1500, 500, 500)  
         time.sleep(2)
 
-def comment_on_profile_followers(device, profile_username, num_users):
-    profile_url = f"instagram://user?username={profile_username}"
+
+def comment_on_profile_followers(device):
+    profile_url = f"instagram://user?username=itsa_mna56"
     print(f"Opening profile: {profile_url}")
     device.open_url(profile_url)
     time.sleep(4)
@@ -162,8 +161,7 @@ def comment_on_profile_followers(device, profile_username, num_users):
 
     interacted_profiles = set()  # Set to track interacted profiles
 
-    user_count = 0
-    while user_count< num_users:
+    while True:
         # Adjusting to find the story indicator correctly
         story_indicator = device.xpath('//*[@content-desc="@2131969140"]')
 
@@ -193,25 +191,18 @@ def comment_on_profile_followers(device, profile_username, num_users):
                 if post.exists:
                     print("Post found, interacting with the post.")
                     post.click()
-                    like_successful = like_post(device)
-                    if like_successful:
-                        caption = extract_caption(device)
-                        print(f'caption : {caption}')
-                        comment_text = generate_comment_from_caption(caption)
-                        print(f"Generated comment: {comment_text}")
-                        time.sleep(5)
-                        comment_on_post(device, comment_text)
-                        device.press('back')
-                        device.press('back')
-                        device.press('back')
-                        device.press('back')
-                        user_count += 1
-                        print(f'The Number of user interacted with {user_count}')
-                    else:
-                        print('[-] Already Liked')
-                        device.press('back')
-                        device.press('back')
-                        device.press('back')
+                    # Perform actions on the post here
+                    # Example:
+                    # like_post(device)
+                    # comment_text = generate_generic_comment()
+                    # print(f"Generated comment: {comment_text}")
+                    # time.sleep(5)
+                    # comment_on_post(device, comment_text)
+
+                    # Navigate back after interacting
+                    device.press('back')
+                    device.press('back')
+                    device.press('back')
                 else:
                     print("No posts found, going back to followers list.")
                     device.press('back')
@@ -225,11 +216,13 @@ def comment_on_profile_followers(device, profile_username, num_users):
             print("No stories found, swiping to look for more stories.")
             device.swipe(500, 1200, 500, 300)  # Adjust swipe coordinates as needed
             time.sleep(2)
-            see_more = device.xpath('//*[@resource-id="com.instagram.android:id/see_more_button"]')
-            if see_more.exists:
-                print("Clicking 'see more' to load more followers.")
-                see_more.click()
 
+        see_more = device.xpath('//*[contains(text(), "see more")]')
+        if see_more.exists:
+            print("Clicking 'see more' to load more followers.")
+            see_more.click()
+
+        
 
 
 def comment_on_home_feed(device):
@@ -241,12 +234,15 @@ def comment_on_home_feed(device):
         
         if like_successful:
             caption = extract_caption(device)
-            comment_text = generate_comment_from_caption(caption)
-            print(comment_text)
-            time.sleep(4)
-            comment_successful = comment_on_post(device, comment_text)
-            if not comment_successful:
-                print("[-] Error during commenting, swiping to next post.")
+            if caption:
+                comment_text = generate_comment_from_caption(caption)
+                print(comment_text)
+                time.sleep(4)
+                comment_successful = comment_on_post(device, comment_text)
+                if not comment_successful:
+                    print("[-] Error during commenting, swiping to next post.")
+            else:
+                print("[-] Could not extract caption, swiping to next post.")
         else:
             print("[-] Like button not found, swiping to next post")
         
@@ -272,35 +268,35 @@ def comment_on_stories(device):
         time.sleep(2)
 
 def main():
-    device = u2.connect()
+    device = u2.connect('192.168.1.10:38075')
 
     while True:
-        print("\nMenu:")
-        print("1. Comment on posts related to hashtags")
-        print("2. Comment on selected profile's followers and their followers")
-        print("3. Comment on home feed")
-        print("4. Comment on stories")
-        print("5. Exit")
+        comment_on_profile_followers(device)
 
-        choice = input("Enter your choice: ")
+        # print("\nMenu:")
+        # print("1. Comment on posts related to hashtags")
+        # print("2. Comment on selected profile's followers and their followers")
+        # print("3. Comment on home feed")
+        # print("4. Comment on stories")
+        # print("5. Exit")
 
-        if choice == '1':
-            hashtag = input("Enter the hashtag: ")
-            num_posts = int(input("Enter the number of posts to interact with (e.g., 10, 20, 30): "))
-            comment_on_hashtag_posts(device, hashtag, num_posts)
-        elif choice == '2':
-            profile_username = input("Enter the profile username: ")
-            num_users = int(input("Enter the number of users to interact with (e.g., 10, 20, 30): "))
-            comment_on_profile_followers(device, profile_username, num_users)
-        elif choice == '3':
-            comment_on_home_feed(device)
-        elif choice == '4':
-            comment_on_stories(device)
-        elif choice == '5':
-            print("Exiting...")
-            break
-        else:
-            print("Invalid choice. Please try again.")
+        # choice = input("Enter your choice: ")
+
+        # if choice == '1':
+        #     hashtag = input("Enter the hashtag: ")
+        #     comment_on_hashtag_posts(device, hashtag)
+        # elif choice == '2':
+        #     profile_username = input("Enter the profile username: ")
+        #     comment_on_profile_followers(device, profile_username)
+        # elif choice == '3':
+        #     comment_on_home_feed(device)
+        # elif choice == '4':
+        #     comment_on_stories(device)
+        # elif choice == '5':
+        #     print("Exiting...")
+        #     break
+        # else:
+        #     print("Invalid choice. Please try again.")
 
 if __name__ == "__main__":
     main()
