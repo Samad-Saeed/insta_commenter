@@ -109,6 +109,65 @@ def search_hashtag(device, hashtag):
         return False
     return True
 
+
+def comment_on_location(device, hashtag, num_post):
+    if not search_hashtag(device, hashtag):
+        return
+
+    places = device(text="Places").click()
+    time.sleep(3)
+
+    res = device.xpath('//*[@resource-id="com.instagram.android:id/recycler_view"]/android.widget.LinearLayout[1]/android.widget.LinearLayout[1]').click()
+    time.sleep(2)
+    recent = device(text="Recent").click()
+    time.sleep(3)
+
+    index = 0  # Start index at 0
+    posts_count = 0 
+    while posts_count < num_post:
+        time.sleep(2)
+        
+        post = device(resourceId="com.instagram.android:id/image_button", index=index)
+        post.click()
+        time.sleep(2)
+        
+        if random.random() <= 0.7:  
+            like_successful = like_post(device)
+            if like_successful:
+                print("Liked post successfully")
+            else:
+                print("[-] Failed to like post, swiping to next post.")
+        else:  
+            caption = extract_caption(device)
+            print(caption)
+            time.sleep(2) 
+            if caption:
+                comment_text = generate_comment_from_caption(caption)
+                print(comment_text)
+                time.sleep(3)
+                comment_successful = comment_on_post(device, comment_text)
+                if comment_successful:
+                    print("Commented on post successfully")
+                else:
+                    print("[-] Error during commenting, swiping to next post.")
+            else:
+                print("[-] Could not extract caption, swiping to next post.")
+        
+        device.press('back')
+        time.sleep(2)
+        
+        # Update the index
+        index += 1
+        if index > 12:
+            index = 0
+            device.swipe(500, 1500, 500, 500)
+            
+        
+        posts_count += 1
+        print(f'Number of posts processed = {posts_count}')
+
+
+
 def comment_on_hashtag_posts(device ):
     if not search_hashtag(device):
         return
@@ -268,23 +327,23 @@ def comment_on_stories(device):
         time.sleep(2)
 
 def main():
-    device = u2.connect('192.168.1.10:38075')
+    device = u2.connect('192.168.1.9:40753')
 
     while True:
-        comment_on_profile_followers(device)
 
-        # print("\nMenu:")
-        # print("1. Comment on posts related to hashtags")
-        # print("2. Comment on selected profile's followers and their followers")
-        # print("3. Comment on home feed")
-        # print("4. Comment on stories")
-        # print("5. Exit")
+        print("\nMenu:")
+        print("1. Comment on posts related to hashtags")
+        print("2. Comment on selected profile's followers and their followers")
+        print("3. Comment on home feed")
+        print("4. Comment on stories")
+        print("5. Exit")
 
-        # choice = input("Enter your choice: ")
+        choice = input("Enter your choice: ")
 
-        # if choice == '1':
-        #     hashtag = input("Enter the hashtag: ")
-        #     comment_on_hashtag_posts(device, hashtag)
+        if choice == '1':
+            hashtag = input("Enter the hashtag: ")
+            comment_on_location(device, hashtag)
+            # comment_on_hashtag_posts(device, hashtag)
         # elif choice == '2':
         #     profile_username = input("Enter the profile username: ")
         #     comment_on_profile_followers(device, profile_username)
