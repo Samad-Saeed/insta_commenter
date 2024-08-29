@@ -166,7 +166,7 @@ def search_hashtag(device, hashtag):
         return False
     return True
 
-def comment_on_hashtag_posts(device, hashtag, num_post):
+def comment_on_hashtag_posts(device, hashtag, num_post, like_posts, comment_posts):
     if not search_hashtag(device, hashtag):
         return
     
@@ -178,13 +178,14 @@ def comment_on_hashtag_posts(device, hashtag, num_post):
     while posts_count < num_post:
         time.sleep(2)
         
-        if random.random() <= 0.7:  
+        if like_posts:  
             like_successful = like_post(device)
             if like_successful:
                 print("Liked post successfully")
             else:
                 print("[-] Failed to like post, swiping to next post.")
-        else:  
+
+        if comment_posts:  
             caption = extract_caption(device)
             print(caption)
             time.sleep(2) 
@@ -206,7 +207,7 @@ def comment_on_hashtag_posts(device, hashtag, num_post):
         print(f'Number of post = {posts_count}')
 
 
-def comment_on_profile_followers(device, profile_username, num_users):
+def comment_on_profile_followers(device, profile_username, num_users, like_posts, comment_posts, follow_profile):
     profile_url = f"instagram://user?username={profile_username}"
     print(f"Opening profile: {profile_url}")
     device.open_url(profile_url)
@@ -245,13 +246,24 @@ def comment_on_profile_followers(device, profile_username, num_users):
                 interacted_profiles.add(profile_name)
                 profile_name_element.click()
                 time.sleep(3)
+                follow = device(text ='Follow')
+                follow.click()
 
                 post = device(resourceId="com.instagram.android:id/media_set_row_content_identifier").child(index=0)
                 if post.exists:
                     print("Post found, interacting with the post.")
                     post.click()
-                    like_successful = like_post(device)
-                    if like_successful:
+                    time.sleep(2)
+                    if like_posts:  
+                        like_successful = like_post(device)
+                        if like_successful:
+                            print("Liked post successfully")
+                            print(f'The Number of user interacted with {user_count}')
+
+                        else:
+                            print("[-] Failed to like post, swiping to next post.")
+
+                    if comment_posts:
                         caption = extract_caption(device)
                         print(f'caption : {caption}')
                         comment_text = generate_comment_from_caption(caption)
@@ -342,22 +354,27 @@ def main():
 
         choice = input("Enter your choice: ")
 
+        if choice in ['1', '2', '3', '4', '5']:
+            like = input("Do you want to like the posts as well? (y/n): ").strip().lower()
+            comment = input("Do you want to comment on the posts? (y/n): ").strip().lower()
+
         if choice == '1':
             hashtag = input("Enter the hashtag: ")
             num_posts = int(input("Enter the number of posts to interact with (e.g., 10, 20, 30): "))
-            comment_on_hashtag_posts(device, hashtag, num_posts)
+            comment_on_hashtag_posts(device, hashtag, num_posts, like == 'y', comment == 'y')
         elif choice == '2':
             profile_username = input("Enter the profile username: ")
             num_users = int(input("Enter the number of users to interact with (e.g., 10, 20, 30): "))
-            comment_on_profile_followers(device, profile_username, num_users)
+            follow = input("Do you want to follow on the posts? (y/n): ").strip().lower()
+            comment_on_profile_followers(device, profile_username, num_users, like == 'y', comment == 'y', follow=="y")
         elif choice == '3':
             location = input("Enter the location: ")
             loc_posts = int(input("Enter the number of posts to interact with (e.g., 10, 20, 30): "))
-            comment_on_location(device, location, loc_posts)
+            comment_on_location(device, location, loc_posts, like == 'y', comment == 'y')
         elif choice == '4':
-            comment_on_home_feed(device)
+            comment_on_home_feed(device, like == 'y', comment == 'y')
         elif choice == '5':
-            comment_on_stories(device)
+            comment_on_stories(device, like == 'y', comment == 'y')
         elif choice == '6':
             print("Exiting...")
             break
