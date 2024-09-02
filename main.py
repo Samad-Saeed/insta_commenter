@@ -65,7 +65,7 @@ def like_post(device):
         if like_button.info['contentDescription'] == 'Liked':
             print("[+] Already liked the post")
         else:
-            like_button.click()
+            # like_button.click()
             print("[+] Post Liked")
             return True
     else:
@@ -137,7 +137,8 @@ def comment_on_post(device, comment_text):
             comment_field.set_text(comment_text)
             time.sleep(2)
             post_button = device(resourceId="com.instagram.android:id/layout_comment_thread_post_button_icon")
-            post_button.click()
+            # post_button.click()
+
             print("[+] Commented on the post")
             device.press('back')
             device.press('back')
@@ -227,27 +228,34 @@ def comment_on_profile_followers(device, profile_username, num_users, like_posts
     user_count = 0
     while user_count< num_users:
         # Adjusting to find the story indicator correctly
-        story_indicator = device.xpath('//*[@content-desc="@2131969372"]')
+        story_indicator = device.xpath('//*[@content-desc="@2131969450"]')
 
         if story_indicator.exists:
             story_indicator.click()
             time.sleep(2)
+            try:
+                profile_name_element = device(resourceId="com.instagram.android:id/reel_viewer_header_container")
+                print("this ")
+            except:
+                profile_name_element = device(resourceId="com.instagram.android:id/reel_viewer_title")
+                print("this 2")
 
-            # Get profile name
-            profile_name_element = device(resourceId="com.instagram.android:id/reel_viewer_header_container")
-            if profile_name_element.exists:
-                profile_name = profile_name_element.text
-                
-                # Check if we have already interacted with this profile
-                if profile_name in interacted_profiles:
-                    print(f"Already interacted with profile: {profile_name}")
-                    # Swipe to the next story if available
-                    device.press('back')
-                    time.sleep(2)
-                    continue
 
-                print(f"Interacting with profile: {profile_name}")
-                interacted_profiles.add(profile_name)
+            try:
+                if profile_name_element.exists:
+                    profile_name = profile_name_element.get
+                    
+                    # Check if we have already interacted with this profile
+                    if profile_name in interacted_profiles:
+                        print(f"Already interacted with profile: {profile_name}")
+                        # Swipe to the next story if available
+                        device.press('back')
+                        time.sleep(2)
+                        continue
+
+                    print(f"Interacting with profile: {profile_name}")
+                    interacted_profiles.add(profile_name)
+            except:
                 profile_name_element.click()
                 time.sleep(3)
 
@@ -256,7 +264,7 @@ def comment_on_profile_followers(device, profile_username, num_users, like_posts
                     print("Post found, interacting with the post.")
                     if follow_profile:
                         follow = device(text ='Follow')
-                        follow.click()
+                        # follow.click()
                         print('user followed')
                     time.sleep(2)
                     if like_posts and random.random() <= 0.7:  
