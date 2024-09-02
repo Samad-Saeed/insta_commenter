@@ -71,7 +71,7 @@ def like_post(device):
     else:
         return False
     
-def comment_on_location(device, hashtag, num_post):
+def comment_on_location(device, hashtag, num_post, like_posts , comment_posts ) :
     if not search_hashtag(device, hashtag):
         return
 
@@ -92,13 +92,13 @@ def comment_on_location(device, hashtag, num_post):
         post.click()
         time.sleep(2)
         
-        if random.random() <= 0.7:  
+        if like_posts and random.random() <= 0.7:  
             like_successful = like_post(device)
             if like_successful:
                 print("Liked post successfully")
             else:
                 print("[-] Failed to like post, swiping to next post.")
-        else:  
+        if comment_posts and random.random() <= 0.7:  
             caption = extract_caption(device)
             print(caption)
             time.sleep(2) 
@@ -178,14 +178,14 @@ def comment_on_hashtag_posts(device, hashtag, num_post, like_posts, comment_post
     while posts_count < num_post:
         time.sleep(2)
         
-        if like_posts:  
+        if like_posts and random.random() <= 0.6:  
             like_successful = like_post(device)
             if like_successful:
                 print("Liked post successfully")
             else:
                 print("[-] Failed to like post, swiping to next post.")
 
-        if comment_posts:  
+        if comment_posts and random.random() <= 0.6:  
             caption = extract_caption(device)
             print(caption)
             time.sleep(2) 
@@ -198,9 +198,13 @@ def comment_on_hashtag_posts(device, hashtag, num_post, like_posts, comment_post
                     print("Commented on post successfully")
                 else:
                     print("[-] Error during commenting, swiping to next post.")
+                    device.swipe(500, 1500, 500, 500)  
+
             else:
                 print("[-] Could not extract caption, swiping to next post.")
-        
+                device.swipe(500, 1500, 500, 500)  
+
+        time.sleep(3)
         device.swipe(500, 1500, 500, 500)  
         time.sleep(2)
         posts_count += 1
@@ -223,14 +227,14 @@ def comment_on_profile_followers(device, profile_username, num_users, like_posts
     user_count = 0
     while user_count< num_users:
         # Adjusting to find the story indicator correctly
-        story_indicator = device.xpath('//*[@content-desc="@2131969140"]')
+        story_indicator = device.xpath('//*[@content-desc="@2131969372"]')
 
         if story_indicator.exists:
             story_indicator.click()
             time.sleep(2)
 
             # Get profile name
-            profile_name_element = device.xpath('//*[@resource-id="com.instagram.android:id/reel_viewer_title"]')
+            profile_name_element = device(resourceId="com.instagram.android:id/reel_viewer_header_container")
             if profile_name_element.exists:
                 profile_name = profile_name_element.text
                 
@@ -246,15 +250,17 @@ def comment_on_profile_followers(device, profile_username, num_users, like_posts
                 interacted_profiles.add(profile_name)
                 profile_name_element.click()
                 time.sleep(3)
-                follow = device(text ='Follow')
-                follow.click()
 
                 post = device(resourceId="com.instagram.android:id/media_set_row_content_identifier").child(index=0)
                 if post.exists:
                     print("Post found, interacting with the post.")
-                    post.click()
+                    if follow_profile:
+                        follow = device(text ='Follow')
+                        follow.click()
+                        print('user followed')
                     time.sleep(2)
-                    if like_posts:  
+                    if like_posts and random.random() <= 0.7:  
+                        post.click()
                         like_successful = like_post(device)
                         if like_successful:
                             print("Liked post successfully")
@@ -263,7 +269,7 @@ def comment_on_profile_followers(device, profile_username, num_users, like_posts
                         else:
                             print("[-] Failed to like post, swiping to next post.")
 
-                    if comment_posts:
+                    if comment_posts and random.random() <= 0.7:
                         caption = extract_caption(device)
                         print(f'caption : {caption}')
                         comment_text = generate_comment_from_caption(caption)
@@ -301,14 +307,15 @@ def comment_on_profile_followers(device, profile_username, num_users, like_posts
 
 
 
-def comment_on_home_feed(device):
+def comment_on_home_feed(device, like_posts, comment_posts):
     device.session("com.instagram.android")
     time.sleep(2)
 
     while True:
-        like_successful = like_post(device)
+        if like_posts and random.random() <= 0.7:
+            like_successful = like_post(device)
         
-        if like_successful:
+        if comment_posts and random.random() <= 0.7:
             caption = extract_caption(device)
             comment_text = generate_comment_from_caption(caption)
             print(comment_text)
@@ -322,7 +329,7 @@ def comment_on_home_feed(device):
         device.swipe(500, 1500, 500, 500)  # Swipe to next post
         time.sleep(2)
 
-def comment_on_stories(device):
+def comment_on_stories(device, like_posts):
     device.session("com.instagram.android")
     time.sleep(2)
 
@@ -334,14 +341,15 @@ def comment_on_stories(device):
         while not device(resourceId="com.instagram.android:id/toolbar_like_container").exists:
             time.sleep(5)
         
-        like_button = device(resourceId="com.instagram.android:id/toolbar_like_container")
-        like_button.click()
+        if like_posts and random.random() <= 0.7:
+            like_button = device(resourceId="com.instagram.android:id/toolbar_like_container")
+            like_button.click()
         time.sleep(2)
         device.swipe(500, 1500, 500, 500)  
         time.sleep(2)
 
 def main():
-    device = u2.connect('192.168.1.9:40753')
+    device = u2.connect('')
 
     while True:
         print("\nMenu:")
@@ -374,7 +382,7 @@ def main():
         elif choice == '4':
             comment_on_home_feed(device, like == 'y', comment == 'y')
         elif choice == '5':
-            comment_on_stories(device, like == 'y', comment == 'y')
+            comment_on_stories(device, like == 'y')
         elif choice == '6':
             print("Exiting...")
             break
